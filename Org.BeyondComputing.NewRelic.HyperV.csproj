@@ -59,8 +59,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="config\newrelic.template.json" />
-    <None Include="config\plugin.template.json" />
+    <None Include="config\newrelic.template.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="config\plugin.template.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
