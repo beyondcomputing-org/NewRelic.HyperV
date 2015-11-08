@@ -10,11 +10,12 @@ namespace Org.BeyondComputing.NewRelic.HyperV
         {
             try
             {
+                // Validate Config Files
                 CheckConfigFiles();
+
+                // Start New Relic Plugin
                 Runner runner = new Runner();
-
                 runner.Add(new PluginAgentFactory());
-
                 runner.SetupAndRun();
             }
             catch (Exception e)
@@ -26,6 +27,11 @@ namespace Org.BeyondComputing.NewRelic.HyperV
             return 0;
         }
 
+        /// <summary>
+        /// Checks for existence of config files when starting up
+        /// Helps debug issues.  The default New Relic SDK error isn't helpful
+        /// </summary>
+        /// <returns></returns>
         private static bool CheckConfigFiles()
         {
             Console.WriteLine("Checking if config Files exist");
