@@ -2,7 +2,7 @@
 New Relic plugin for Microsoft HyperV
 
 # Requirements
-1. .Net 4.5
+1. .Net 4.5.2 or 4.6
 2. Microsoft HyperV
 
 # Known Issues
