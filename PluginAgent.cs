@@ -70,15 +70,11 @@ namespace Org.BeyondComputing.NewRelic.HyperV
                 log.Info($"Collecting information from server: {this.name}");
                 ManagementObjectCollection vmDetails = hyperv.GetVMDetails(this.name);
 
+                // Report Metrics to New Relic
                 ReportVMMetrics(vmDetails);
-
-                foreach (ManagementObject vm in vmDetails)
-                {
-                    // Report Metrics to New Relic
-                    ReportVMUptime(vm);
-                    ReportReplicationHealth(vm);
-                    ReportVMHealth(vm);
-                }
+                ReportVMUptime(vmDetails);
+                ReportReplicationHealth(vmDetails);
+                ReportVMHealth(vmDetails);
             }
             catch
             {
@@ -142,58 +138,66 @@ namespace Org.BeyondComputing.NewRelic.HyperV
 
         }
 
-        private void ReportVMUptime(ManagementObject vm)
+        private void ReportVMUptime(ManagementObjectCollection vms)
         {
-            // Name of VM
-            string name = vm["ElementName"].ToString();
+            foreach (ManagementObject vm in vms)
+            {
+                // Name of VM
+                string name = vm["ElementName"].ToString();
 
-            // Uptime of VM
-            UInt64 UpTimeDays = UInt64.Parse(vm["OnTimeInMilliseconds"].ToString()) / (1000 * 60 * 60 * 24);
-            UInt64 UpTimeHours = UInt64.Parse(vm["OnTimeInMilliseconds"].ToString()) / (1000 * 60 * 60);
-            UInt64 UpTimeMinutes = UInt64.Parse(vm["OnTimeInMilliseconds"].ToString()) / (1000 * 60);
+                // Uptime of VM
+                UInt64 UpTimeDays = UInt64.Parse(vm["OnTimeInMilliseconds"].ToString()) / (1000 * 60 * 60 * 24);
+                UInt64 UpTimeHours = UInt64.Parse(vm["OnTimeInMilliseconds"].ToString()) / (1000 * 60 * 60);
+                UInt64 UpTimeMinutes = UInt64.Parse(vm["OnTimeInMilliseconds"].ToString()) / (1000 * 60);
 
-            ReportMetric($"vms/{name}/UpTimeInDays", "Days", UpTimeDays);
-            ReportMetric($"vms/{name}/UpTimeInHours", "Hours", UpTimeHours);
-            ReportMetric($"vms/{name}/UpTimeInMinutes", "Minutes", UpTimeMinutes);
+                ReportMetric($"vms/{name}/UpTimeInDays", "Days", UpTimeDays);
+                ReportMetric($"vms/{name}/UpTimeInHours", "Hours", UpTimeHours);
+                ReportMetric($"vms/{name}/UpTimeInMinutes", "Minutes", UpTimeMinutes);
+            }
         }
 
-        private void ReportVMHealth(ManagementObject vm)
+        private void ReportVMHealth(ManagementObjectCollection vms)
         {
-            // Name of VM
-            string name = vm["ElementName"].ToString();
+            foreach (ManagementObject vm in vms)
+            {
+                // Name of VM
+                string name = vm["ElementName"].ToString();
 
-            // Health of VM
-            hyperv.NewRelicMetric HealthMetric;
-            HealthMetric = hyperv.GetHealthState(vm);
-            ReportMetric($"vms/{name}/health", "errors", HealthMetric.Metric);
+                // Health of VM
+                hyperv.NewRelicMetric HealthMetric;
+                HealthMetric = hyperv.GetHealthState(vm);
+                ReportMetric($"vms/{name}/health", "errors", HealthMetric.Metric);
+            }
         }
 
-        private void ReportReplicationHealth(ManagementObject vm)
+        private void ReportReplicationHealth(ManagementObjectCollection vms)
         {
-            // Name of VM
-            string name = vm["ElementName"].ToString();
-
-            // Get Replication Mode
-            hyperv.NewRelicMetric ReplicationMode;
-            ReplicationMode = hyperv.GetReplicationMode(vm);
-
-            // Get Replication Health Status
-            hyperv.NewRelicMetric ReplicationHealth;
-            ReplicationHealth = hyperv.GetReplicationHealth(vm);
-
-            if (ReplicationMode.Metric == 1)
+            foreach (ManagementObject vm in vms)
             {
-                // Primary Replication Node
-                log.Info($"Primary Node {name} - Health: {ReplicationHealth.Description}");
-                ReportMetric($"replication/primary/{name}/health", "errors", ReplicationHealth.Metric);
-            }
-            else if (ReplicationMode.Metric != 0)
-            {
-                // Secondary Replication Node
-                log.Info($"Secondary Node {name} - Health: {ReplicationHealth.Description}");
-                ReportMetric($"replication/secondary/{name}/health", "errors", ReplicationHealth.Metric);
-            }
+                // Name of VM
+                string name = vm["ElementName"].ToString();
 
+                // Get Replication Mode
+                hyperv.NewRelicMetric ReplicationMode;
+                ReplicationMode = hyperv.GetReplicationMode(vm);
+
+                // Get Replication Health Status
+                hyperv.NewRelicMetric ReplicationHealth;
+                ReplicationHealth = hyperv.GetReplicationHealth(vm);
+
+                if (ReplicationMode.Metric == 1)
+                {
+                    // Primary Replication Node
+                    log.Info($"Primary Node {name} - Health: {ReplicationHealth.Description}");
+                    ReportMetric($"replication/primary/{name}/health", "errors", ReplicationHealth.Metric);
+                }
+                else if (ReplicationMode.Metric != 0)
+                {
+                    // Secondary Replication Node
+                    log.Info($"Secondary Node {name} - Health: {ReplicationHealth.Description}");
+                    ReportMetric($"replication/secondary/{name}/health", "errors", ReplicationHealth.Metric);
+                }
+            }
         }
     }
 }
