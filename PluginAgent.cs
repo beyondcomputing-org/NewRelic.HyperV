@@ -136,7 +136,7 @@ namespace Org.BeyondComputing.NewRelic.HyperV
             ReportMetric($"host/numberofprocessors", "procs", numberOfProcs);
             ReportMetric($"host/processorload", "percent", processorLoad);
             ReportMetric($"host/vms/memoryused", "mibibytes", memoryUsage);
-            ReportMetric($"host/vms/memoryused", "percent", ((memoryUsage * 1048576) /hostCapacityBytes)*100);
+            ReportMetric($"host/vms/memoryused", "percent", (float)(((Decimal)(memoryUsage * 1048576) / (Decimal)hostCapacityBytes) * 100));
         }
 
         private void ReportVMUptime(ManagementObjectCollection vms)
