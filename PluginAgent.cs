@@ -158,6 +158,9 @@ namespace Org.BeyondComputing.NewRelic.HyperV
 
         private void ReportVMHealth(ManagementObjectCollection vms)
         {
+            // Create Host metrics
+            int vmErrors = 0;
+
             foreach (ManagementObject vm in vms)
             {
                 // Name of VM
@@ -166,12 +169,19 @@ namespace Org.BeyondComputing.NewRelic.HyperV
                 // Health of VM
                 hyperv.NewRelicMetric HealthMetric;
                 HealthMetric = hyperv.GetHealthState(vm);
+                vmErrors += (int)HealthMetric.Metric;
                 ReportMetric($"vms/{name}/health", "errors", HealthMetric.Metric);
             }
+
+            // Report Host Metrics
+            ReportMetric($"host/vms/health", "errors", vmErrors);
         }
 
         private void ReportReplicationHealth(ManagementObjectCollection vms)
         {
+            // Create Host metrics
+            int hostReplicationHealth = 0;
+
             foreach (ManagementObject vm in vms)
             {
                 // Name of VM
@@ -184,6 +194,7 @@ namespace Org.BeyondComputing.NewRelic.HyperV
                 // Get Replication Health Status
                 hyperv.NewRelicMetric ReplicationHealth;
                 ReplicationHealth = hyperv.GetReplicationHealth(vm);
+                hostReplicationHealth += (int)ReplicationHealth.Metric;
 
                 if (ReplicationMode.Metric == 1)
                 {
@@ -198,6 +209,9 @@ namespace Org.BeyondComputing.NewRelic.HyperV
                     ReportMetric($"replication/secondary/{name}/health", "errors", ReplicationHealth.Metric);
                 }
             }
+
+            // Report Host Metrics
+            ReportMetric($"host/vms/replicationhealth", "errors", hostReplicationHealth);
         }
     }
 }
