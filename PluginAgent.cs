@@ -93,6 +93,7 @@ namespace Org.BeyondComputing.NewRelic.HyperV
             UInt16 numberOfProcs = 0;
             UInt16 processorLoad = 0;
             UInt64 memoryUsage = 0;
+            UInt64 hostCapacityBytes = hyperv.GetHostMemoryCapacityBytes(this.name);
 
             foreach (ManagementObject vm in vms)
             {
@@ -134,8 +135,8 @@ namespace Org.BeyondComputing.NewRelic.HyperV
             // Report Host Metrics
             ReportMetric($"host/numberofprocessors", "procs", numberOfProcs);
             ReportMetric($"host/processorload", "percent", processorLoad);
-            ReportMetric($"host/memoryused", "mibibytes", memoryUsage);
-
+            ReportMetric($"host/vms/memoryused", "mibibytes", memoryUsage);
+            ReportMetric($"host/vms/memoryused", "percent", ((memoryUsage * 1048576) /hostCapacityBytes)*100);
         }
 
         private void ReportVMUptime(ManagementObjectCollection vms)

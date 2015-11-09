@@ -151,5 +151,26 @@ namespace Org.BeyondComputing.NewRelic.HyperV
             return Metric;
         }
 
+        public static UInt64 GetHostMemoryCapacityBytes(string Server)
+        {
+            // Connect to the namespace
+            ManagementScope manScope = new ManagementScope($@"\\{Server}\root\CIMV2");
+
+            // Grab the memory information from the machine
+            ObjectQuery queryObj = new ObjectQuery("SELECT * FROM win32_PhysicalMemory");
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher(manScope, queryObj);
+            ManagementObjectCollection memoryCollection = searcher.Get();
+
+            // Calculate Total Capacity
+            UInt64 hostCapacity = 0;
+            foreach(ManagementObject memory in memoryCollection)
+            {
+                hostCapacity += (UInt64)memory["Capacity"];
+            }
+
+            // Return Memory Capacity
+            return hostCapacity;
+        }
+
     }
 }
