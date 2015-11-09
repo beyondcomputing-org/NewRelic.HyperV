@@ -72,15 +72,11 @@ namespace Org.BeyondComputing.NewRelic.HyperV
 
                 foreach (ManagementObject vm in vmDetails)
                 {
-                    // Exclude host from metrics - just want VM's
-                    if (vm["Description"].ToString() != "Microsoft Hosting Computer System")
-                    {
-                        // Report Metrics to New Relic
-                        ReportVMMetrics(vm);
-                        ReportVMUptime(vm);
-                        ReportReplicationHealth(vm);
-                        ReportVMHealth(vm);
-                    }
+                    // Report Metrics to New Relic
+                    ReportVMMetrics(vm);
+                    ReportVMUptime(vm);
+                    ReportReplicationHealth(vm);
+                    ReportVMHealth(vm);
                 }
             }
             catch

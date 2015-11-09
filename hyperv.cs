@@ -23,7 +23,8 @@ namespace Org.BeyondComputing.NewRelic.HyperV
             ManagementScope manScope = new ManagementScope($@"\\{Server}\root\virtualization\v2");
 
             // Grab all VM info from msvm_ComputerSystem
-            ObjectQuery queryObj = new ObjectQuery("SELECT * FROM Msvm_ComputerSystem");
+            // Exclude host from metrics - just want VM's
+            ObjectQuery queryObj = new ObjectQuery("SELECT * FROM Msvm_ComputerSystem WHERE Caption = \"Virtual Machine\"");
             ManagementObjectSearcher vmSearcher = new ManagementObjectSearcher(manScope, queryObj);
             ManagementObjectCollection vmCollection = vmSearcher.Get();
 
