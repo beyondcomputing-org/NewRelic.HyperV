@@ -1,10 +1,10 @@
 ﻿{
   "agents": [
     {
-      "name": "Name 1"
+      "name": "Server1"
     },
     {
-      "name": "Name 2"
+      "name": "Server2"
     }
   ]
 }
