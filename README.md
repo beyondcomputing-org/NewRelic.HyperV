@@ -1,5 +1,5 @@
 # Org.BeyondComputing.NewRelic.HyperV
-New Relic plugin for Microsoft HyperV
+New Relic plugin for Microsoft HyperV.  Currently monitors: CPU, memory, VM health, replication health and allows alerting based on replication issues or VM health issues.  The plugin is a work in progress so please let me know what features are most important or if you have any issues.
 
 # Requirements
 1. Plugin .Net 4.5.2 or 4.6
