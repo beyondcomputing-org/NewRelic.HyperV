@@ -16,7 +16,7 @@ New Relic plugin for Microsoft HyperV
     rename newrelic.template.json to newrelic.json
     Rename plugin.template.json to plugin.json
     Update settings in both config files for your environment
-3. Run plugin.exe from Command line
+3. Run plugin.exe from Command line (Run as Administrator)
 
 Use NPI to install the plugin to register as a service
 
