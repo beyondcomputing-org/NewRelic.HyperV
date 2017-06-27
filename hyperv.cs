@@ -50,13 +50,14 @@ namespace Org.BeyondComputing.NewRelic.HyperV
             return serviceObject;
         }
 
-        public static ManagementObject GetVirtualSystemSettingData(string Server, string VMpath)
+        public static ManagementObject GetVirtualSystemSettingData(string Server, string Name)
         {
             // Connect to the Hyper-V namespace
             ManagementScope manScope = new ManagementScope($@"\\{Server}\root\virtualization\v2");
 
             // Grab settings for the specified VM
-            ObjectQuery queryObj = new ObjectQuery($"ASSOCIATORS OF {{{VMpath}}} WHERE resultClass = Msvm_VirtualSystemsettingData");
+            ObjectQuery queryObj = new ObjectQuery($"SELECT * FROM Msvm_VirtualSystemSettingData WHERE VirtualSystemIdentifier = \"{Name}\"");
+
             ManagementObjectSearcher vmSearcher = new ManagementObjectSearcher(manScope, queryObj);
             ManagementObjectCollection vmCollection = vmSearcher.Get();
             ManagementObject mo = vmCollection.OfType<ManagementObject>().FirstOrDefault();

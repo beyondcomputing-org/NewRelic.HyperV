@@ -76,9 +76,9 @@ namespace Org.BeyondComputing.NewRelic.HyperV
                 ReportReplicationHealth(vmDetails);
                 ReportVMHealth(vmDetails);
             }
-            catch
+            catch (Exception e)
             {
-                log.Error("Unable to fetch information from the Hyper-v host '{0}'", this.name);
+                log.Error($"Error fetching information from the Hyper-v host '{this.name}'. Error: {e.ToString()}");
             }
         }
 
@@ -98,37 +98,47 @@ namespace Org.BeyondComputing.NewRelic.HyperV
             foreach (ManagementObject vm in vms)
             {
                 // Name of VM
-                string name = vm["ElementName"].ToString();
+                string vmName = vm["ElementName"].ToString();
+                log.Info($"Reporting State for VM: {vmName}");
 
-                // Create Settings
-                ManagementObject vmSettings = hyperv.GetVirtualSystemSettingData(this.name, vm["__PATH"].ToString());
-                
-                // Get VM Settings
-                ManagementBaseObject inParams = vsms.GetMethodParameters("GetSummaryInformation");
-                inParams["SettingData"] = new string[1] { vmSettings["__PATH"].ToString() };
-
-                // Request CPU Information
-                inParams["RequestedInformation"] = new int[4] { 4, 100, 101, 103 };
-
-                ManagementBaseObject outParams = vsms.InvokeMethod("GetSummaryInformation", inParams, null);
-                ManagementBaseObject[] value = (ManagementBaseObject[])outParams.GetPropertyValue("SummaryInformation");
-
-                UInt16 state = (UInt16)value[0].GetPropertyValue("EnabledState");
-                numberOfProcs += (UInt16)value[0].GetPropertyValue("NumberOfProcessors");
-                ReportMetric($"vms/{name}/numberofprocessors", "procs", (UInt16)value[0].GetPropertyValue("NumberOfProcessors"));
-
-                if (state == 2)
+                try
                 {
-                    processorLoad += (UInt16)value[0].GetPropertyValue("ProcessorLoad");
-                    ReportMetric($"vms/{name}/processorload", "percent", (UInt16)value[0].GetPropertyValue("ProcessorLoad"));
-                    memoryUsage += (UInt64)value[0].GetPropertyValue("MemoryUsage");
-                    ReportMetric($"vms/{name}/memoryused", "mibibytes", (UInt64)value[0].GetPropertyValue("MemoryUsage"));
-                }
+                    // Create Settings
+                    ManagementObject vmSettings = hyperv.GetVirtualSystemSettingData(this.name, vm["name"].ToString());
 
-                // Cleanup
-                inParams.Dispose();
-                outParams.Dispose();
-                vmSettings.Dispose();
+                    // Get VM Settings
+                    ManagementBaseObject inParams = vsms.GetMethodParameters("GetSummaryInformation");
+                    inParams["SettingData"] = new string[1] { vmSettings["__PATH"].ToString() };
+
+                    // Request CPU Information - https://msdn.microsoft.com/en-us/library/cc160706(v=vs.85).aspx
+                    inParams["RequestedInformation"] = new int[4] { 4, 100, 101, 103 };
+
+                    // Msvm_SummaryInformation class - https://msdn.microsoft.com/en-us/library/cc136898(v=vs.85).aspx
+                    ManagementBaseObject outParams = vsms.InvokeMethod("GetSummaryInformation", inParams, null);
+                    ManagementBaseObject[] value = (ManagementBaseObject[])outParams.GetPropertyValue("SummaryInformation");
+
+                    UInt16 state = (UInt16)value[0].GetPropertyValue("EnabledState");
+
+                    if (state == 2)
+                    {
+                        processorLoad += (UInt16)value[0].GetPropertyValue("ProcessorLoad");
+                        ReportMetric($"vms/{vmName}/processorload", "percent", (UInt16)value[0].GetPropertyValue("ProcessorLoad"));
+                        memoryUsage += (UInt64)value[0].GetPropertyValue("MemoryUsage");
+                        ReportMetric($"vms/{vmName}/memoryused", "mibibytes", (UInt64)value[0].GetPropertyValue("MemoryUsage"));
+                    }
+
+                    numberOfProcs += (UInt16)value[0].GetPropertyValue("NumberOfProcessors");
+                    ReportMetric($"vms/{vmName}/numberofprocessors", "procs", (UInt16)value[0].GetPropertyValue("NumberOfProcessors"));
+
+                    // Cleanup
+                    inParams.Dispose();
+                    outParams.Dispose();
+                    vmSettings.Dispose();
+                }
+                catch (Exception e)
+                {
+                    log.Error($"Error fetching VM metrics for VM:{vmName} on Server:{this.name}'. Error: {e.ToString()}");
+                }
             }
             vsms.Dispose();
 
