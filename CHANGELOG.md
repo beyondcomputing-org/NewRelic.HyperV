@@ -1,6 +1,10 @@
 ﻿CHANGELOG
 ==============================
 
+0.1.2
+-----
+ - Fixed issue with VM's that had checkpoints not succesfully reporting metrics
+
 0.1.1
 -----
  - Added app.manifest (requestedExecutionLevel = requireAdministrator)
