@@ -3,7 +3,7 @@
 
 0.1.2
 -----
- - Fixed issue with VM's that had checkpoints not succesfully reporting metrics
+ - Fixed issue with VM's that had checkpoints not successfully reporting metrics
 
 0.1.1
 -----
